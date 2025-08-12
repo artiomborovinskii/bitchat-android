@@ -2,6 +2,8 @@ package com.bitchat.android.model
 
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
 
 /**
  * A unique identifier for a call session.
@@ -42,9 +44,6 @@ data class CallEnd(
 /**
  * Represents a single packet of voice data in a call.
  */
-import java.nio.ByteBuffer
-import java.nio.ByteOrder
-
 @Parcelize
 data class VoiceStreamPacket(
     override val callID: CallID,
