@@ -15,7 +15,6 @@ import com.bitchat.android.model.VoiceStreamPacket
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.util.concurrent.ConcurrentSkipListMap
 import android.media.AudioTrack
