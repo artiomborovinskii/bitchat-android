@@ -186,7 +186,7 @@ class VoiceCallManager(private val context: Context, private val onPacketReady: 
     private suspend fun processAudioStream(bufferSize: Int) {
         val bufferInfo = MediaCodec.BufferInfo()
         val pcmBuffer = ByteArray(bufferSize)
-        while (isActive) {
+        while (recordingJob?.isActive == true) {
             val bytesRead = audioRecord?.read(pcmBuffer, 0, pcmBuffer.size) ?: 0
             if (bytesRead > 0) {
                 val inputBufferIndex = encoder?.dequeueInputBuffer(-1)
@@ -214,7 +214,7 @@ class VoiceCallManager(private val context: Context, private val onPacketReady: 
 
     private suspend fun processPlaybackStream() {
         val bufferInfo = MediaCodec.BufferInfo()
-        while (isActive) {
+        while (playbackJob?.isActive == true) {
             val packet = jitterBuffer.remove(nextSequenceToPlay)
             if (packet != null) {
                 nextSequenceToPlay++
