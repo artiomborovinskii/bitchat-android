@@ -215,8 +215,7 @@ class BluetoothMeshService(private val context: Context) {
     private fun sendVoiceStreamPacket(packet: com.bitchat.android.model.VoiceStreamPacket) {
         serviceScope.launch {
             try {
-                val payloadJson = gson.toJson(packet)
-                val payloadBytes = payloadJson.toByteArray(Charsets.UTF_8)
+                val payloadBytes = packet.toBinaryPayload()
                 val recipientID = _callState.value.remotePeerID ?: return@launch
 
                 val bitchatPacket = BitchatPacket(
@@ -516,9 +515,12 @@ class BluetoothMeshService(private val context: Context) {
 
             override fun handleVoiceStream(routed: RoutedPacket) {
                 if (_callState.value.status == com.bitchat.android.model.CallState.Status.ACTIVE) {
-                    val payloadString = String(routed.packet.payload, Charsets.UTF_8)
-                    val voicePacket = gson.fromJson(payloadString, com.bitchat.android.model.VoiceStreamPacket::class.java)
-                    voiceCallManager.handleIncomingPacket(voicePacket)
+                    val voicePacket = com.bitchat.android.model.VoiceStreamPacket.fromBinaryPayload(routed.packet.payload)
+                    if (voicePacket != null) {
+                        voiceCallManager.handleIncomingPacket(voicePacket)
+                    } else {
+                        Log.w(TAG, "Failed to deserialize voice stream packet")
+                    }
                 }
             }
             
