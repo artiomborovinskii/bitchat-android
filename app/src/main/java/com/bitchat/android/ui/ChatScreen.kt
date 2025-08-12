@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.zIndex
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 
 /**
@@ -76,7 +77,7 @@ fun ChatScreen(viewModel: ChatViewModel) {
     // Use WindowInsets to handle keyboard properly
     Box(modifier = Modifier.fillMaxSize()) {
         val headerHeight = 42.dp
-        
+
         // Main content area that responds to keyboard/window insets
         Column(
             modifier = Modifier
@@ -106,7 +107,7 @@ fun ChatScreen(viewModel: ChatViewModel) {
                     val text = messageText.text.trim()
                     if (text.isNotEmpty()) {
                         if (text.startsWith("/call")) {
-                            if (audioPermissionState.hasPermission) {
+                            if (audioPermissionState.status.isGranted) {
                                 viewModel.sendMessage(text)
                             } else {
                                 audioPermissionState.launchPermissionRequest()
@@ -261,7 +262,7 @@ private fun ChatInputSection(
 
                 HorizontalDivider(color = colorScheme.outline.copy(alpha = 0.2f))
             }
-            
+
             // Mention suggestions box
             if (showMentionSuggestions && mentionSuggestions.isNotEmpty()) {
                 MentionSuggestionsBox(
