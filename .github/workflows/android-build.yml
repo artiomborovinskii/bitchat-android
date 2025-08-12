@@ -1,51 +1,29 @@
-name: Android CI Build
+name: Android Build
 
 on:
   push:
     branches:
-      - "main"
-      - "feature/voip-calling"
+      - '**'
   pull_request:
     branches:
-      - "main"
-      - "feature/voip-calling"
+      - '**'
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: List files in the repository
-        run: ls -laR
+      - name: Checkout code
+        uses: actions/checkout@v3
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v3
         with:
           java-version: '17'
           distribution: 'temurin'
-          cache: 'gradle'
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-      
-      - name: Print Android SDK location
-        run: echo "ANDROID_HOME is $ANDROID_HOME"
-
-      - name: Grant execute permission for gradlew
-        run: chmod +x ./gradlew
+      - name: Setup Gradle
+        uses: gradle/gradle-build-action@v2
 
       - name: Build with Gradle
         run: ./gradlew build
-        
-      # Step 6: Upload the APK
-      # This is the new, important step!
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          # The name of the file you will download
-          name: bitchat-debug-apk
-          # The path to the APK file on the runner machine
-          path: app/build/outputs/apk/debug/app-debug.apk

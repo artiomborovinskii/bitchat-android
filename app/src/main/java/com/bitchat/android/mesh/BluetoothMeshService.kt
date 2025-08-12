@@ -157,7 +157,9 @@ class BluetoothMeshService(private val context: Context) {
         }
         _callState.value = currentState.copy(status = com.bitchat.android.model.CallState.Status.ACTIVE)
         voiceCallManager.startCall(callID)
-        // TODO: Send CALL_ACCEPT packet
+
+        val callAccept = com.bitchat.android.model.CallAccept(callID, delegate?.getNickname() ?: "anon")
+        sendSignalingPacket(callAccept, MessageType.CALL_ACCEPT, currentState.remotePeerID!!)
     }
 
     fun declineCall(callID: String) {
@@ -165,17 +167,49 @@ class BluetoothMeshService(private val context: Context) {
         if (currentState.status != com.bitchat.android.model.CallState.Status.INCOMING || currentState.callID != callID) {
             return
         }
+        val remotePeerID = currentState.remotePeerID
         _callState.value = com.bitchat.android.model.CallState(com.bitchat.android.model.CallState.Status.IDLE)
-        // TODO: Send CALL_DECLINE packet
+
+        if (remotePeerID != null) {
+            val callDecline = com.bitchat.android.model.CallDecline(callID, delegate?.getNickname() ?: "anon")
+            sendSignalingPacket(callDecline, MessageType.CALL_DECLINE, remotePeerID)
+        }
     }
 
     fun endCall() {
         val currentState = _callState.value
         if (currentState.status == com.bitchat.android.model.CallState.Status.IDLE) return
 
+        val remotePeerID = currentState.remotePeerID
         voiceCallManager.stopCall()
         _callState.value = com.bitchat.android.model.CallState(com.bitchat.android.model.CallState.Status.IDLE)
-        // TODO: Send CALL_END packet to the other party
+
+        if (remotePeerID != null) {
+            val callEnd = com.bitchat.android.model.CallEnd(currentState.callID!!)
+            sendSignalingPacket(callEnd, MessageType.CALL_END, remotePeerID)
+        }
+    }
+
+    private fun sendSignalingPacket(payload: Any, type: MessageType, recipientID: String) {
+        serviceScope.launch {
+            try {
+                val payloadJson = gson.toJson(payload)
+                val payloadBytes = payloadJson.toByteArray(Charsets.UTF_8)
+                val packet = BitchatPacket(
+                    type = type.value,
+                    senderID = hexStringToByteArray(myPeerID),
+                    recipientID = hexStringToByteArray(recipientID),
+                    timestamp = System.currentTimeMillis().toULong(),
+                    payload = payloadBytes,
+                    signature = null,
+                    ttl = VOICE_TTL
+                )
+                connectionManager.broadcastPacket(RoutedPacket(packet))
+                Log.d(TAG, "Sent signaling packet ${type.name} to $recipientID")
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to send signaling packet: ${e.message}")
+            }
+        }
     }
 
     private fun sendVoiceStreamPacket(packet: com.bitchat.android.model.VoiceStreamPacket) {
