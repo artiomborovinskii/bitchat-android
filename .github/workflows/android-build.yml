@@ -27,13 +27,3 @@ jobs:
 
       - name: Build with Gradle
         run: ./gradlew build
-
-      # Step 6: Upload the APK
-      # This is the new, important step!
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          # The name of the file you will download
-          name: bitchat-debug-apk
-          # The path to the APK file on the runner machine
-          path: app/build/outputs/apk/debug/app-debug.apk
