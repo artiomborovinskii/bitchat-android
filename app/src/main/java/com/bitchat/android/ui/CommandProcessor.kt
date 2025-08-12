@@ -16,6 +16,7 @@ class CommandProcessor(
     // Available commands list
     private val baseCommands = listOf(
         CommandSuggestion("/block", emptyList(), "[nickname]", "block or list blocked peers"),
+        CommandSuggestion("/call", emptyList(), "<nickname>", "start a voice call"),
         CommandSuggestion("/channels", emptyList(), null, "show all discovered channels"),
         CommandSuggestion("/clear", emptyList(), null, "clear chat messages"),
         CommandSuggestion("/hug", emptyList(), "<nickname>", "send someone a warm hug"),
@@ -45,6 +46,7 @@ class CommandProcessor(
             "/hug" -> handleActionCommand(parts, "gives", "a warm hug 🫂", meshService, myPeerID, onSendMessage)
             "/slap" -> handleActionCommand(parts, "slaps", "around a bit with a large trout 🐟", meshService, myPeerID, onSendMessage)
             "/channels" -> handleChannelsCommand()
+            "/call" -> handleCallCommand(parts, meshService)
             else -> handleUnknownCommand(cmd)
         }
         
@@ -314,6 +316,66 @@ class CommandProcessor(
             isRelay = false
         )
         messageManager.addMessage(systemMessage)
+    }
+
+    private fun handleCallCommand(parts: List<String>, meshService: Any) {
+        if (parts.size > 1) {
+            val targetName = parts[1].removePrefix("@")
+            val peerID = getPeerIDForNickname(targetName, meshService)
+            val myNickname = state.getNicknameValue()
+
+            if (peerID != null && myNickname != null) {
+                val callID = UUID.randomUUID().toString()
+                val callRequest = com.bitchat.android.model.CallRequest(
+                    callID = callID,
+                    callerNickname = myNickname,
+                    calleePeerID = peerID
+                )
+
+                // Use reflection to call initiateCall on the mesh service
+                try {
+                    val method = meshService::class.java.getDeclaredMethod(
+                        "initiateCall",
+                        com.bitchat.android.model.CallRequest::class.java
+                    )
+                    method.invoke(meshService, callRequest)
+
+                    val systemMessage = BitchatMessage(
+                        sender = "system",
+                        content = "calling $targetName...",
+                        timestamp = Date(),
+                        isRelay = false
+                    )
+                    messageManager.addMessage(systemMessage)
+
+                } catch (e: Exception) {
+                    val systemMessage = BitchatMessage(
+                        sender = "system",
+                        content = "error initiating call: ${e.message}",
+                        timestamp = Date(),
+                        isRelay = false
+                    )
+                    messageManager.addMessage(systemMessage)
+                }
+
+            } else {
+                val systemMessage = BitchatMessage(
+                    sender = "system",
+                    content = "user '$targetName' not found or your nickname is not set.",
+                    timestamp = Date(),
+                    isRelay = false
+                )
+                messageManager.addMessage(systemMessage)
+            }
+        } else {
+            val systemMessage = BitchatMessage(
+                sender = "system",
+                content = "usage: /call <nickname>",
+                timestamp = Date(),
+                isRelay = false
+            )
+            messageManager.addMessage(systemMessage)
+        }
     }
     
     private fun handleUnknownCommand(cmd: String) {

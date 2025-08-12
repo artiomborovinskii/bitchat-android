@@ -147,6 +147,11 @@ class PacketProcessor(private val myPeerID: String) {
                         MessageType.NOISE_HANDSHAKE_INIT -> handleNoiseHandshake(routed, 1)
                         MessageType.NOISE_HANDSHAKE_RESP -> handleNoiseHandshake(routed, 2)
                         MessageType.NOISE_ENCRYPTED -> handleNoiseEncrypted(routed)
+                        MessageType.CALL_REQUEST -> delegate?.handleCallRequest(routed)
+                        MessageType.CALL_ACCEPT -> delegate?.handleCallAccept(routed)
+                        MessageType.CALL_DECLINE -> delegate?.handleCallDecline(routed)
+                        MessageType.CALL_END -> delegate?.handleCallEnd(routed)
+                        MessageType.VOICE_STREAM -> delegate?.handleVoiceStream(routed)
                         // MessageType.DELIVERY_ACK -> handleDeliveryAck(routed) // custom packet type...
                         // MessageType.READ_RECEIPT -> handleReadReceipt(routed)
                         else -> {
@@ -323,6 +328,13 @@ interface PacketProcessorDelegate {
     fun handleFragment(packet: BitchatPacket): BitchatPacket?
 //    fun handleDeliveryAck(routed: RoutedPacket)
     fun handleReadReceipt(routed: RoutedPacket)
+
+    // Call signaling
+    fun handleCallRequest(routed: RoutedPacket)
+    fun handleCallAccept(routed: RoutedPacket)
+    fun handleCallDecline(routed: RoutedPacket)
+    fun handleCallEnd(routed: RoutedPacket)
+    fun handleVoiceStream(routed: RoutedPacket)
     
     // Communication
     fun sendAnnouncementToPeer(peerID: String)

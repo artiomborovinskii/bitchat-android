@@ -91,6 +91,9 @@ class ChatViewModel(
     val peerNicknames: LiveData<Map<String, String>> = state.peerNicknames
     val peerRSSI: LiveData<Map<String, Int>> = state.peerRSSI
     val showAppInfo: LiveData<Boolean> = state.showAppInfo
+
+    // Voice Call State
+    val callState: StateFlow<com.bitchat.android.model.CallState> = meshService.callState
     
     init {
         // Note: Mesh service delegate is now set by MainActivity
@@ -268,6 +271,20 @@ class ChatViewModel(
                 meshService.sendMessage(content, mentions, null)
             }
         }
+    }
+
+    // MARK: - Voice Call Actions
+
+    fun acceptCall() {
+        callState.value.callID?.let { meshService.acceptCall(it) }
+    }
+
+    fun declineCall() {
+        callState.value.callID?.let { meshService.declineCall(it) }
+    }
+
+    fun endCall() {
+        meshService.endCall()
     }
     
     // MARK: - Utility Functions

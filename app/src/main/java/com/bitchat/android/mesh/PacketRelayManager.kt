@@ -34,6 +34,16 @@ class PacketRelayManager(private val myPeerID: String) {
         val peerID = routed.peerID ?: "unknown"
         
         Log.d(TAG, "Evaluating relay for packet type ${packet.type} from $peerID (TTL: ${packet.ttl})")
+
+        // Special handling for voice call streams to give them "infinite" hops
+        if (packet.type == com.bitchat.android.protocol.MessageType.VOICE_STREAM.value) {
+            // To prevent loops, we rely on the duplicate packet detection in SecurityManager.
+            // By refreshing the TTL, we allow the packet to propagate further.
+            val relayPacket = packet.copy(ttl = 64u) // Refresh TTL to a high value
+            Log.d(TAG, "Refreshing TTL for VOICE_STREAM packet to ${relayPacket.ttl}")
+            relayPacket(RoutedPacket(relayPacket, peerID, routed.relayAddress))
+            return // Done with this packet
+        }
         
         // Double-check this packet isn't addressed to us
         if (isPacketAddressedToMe(packet)) {

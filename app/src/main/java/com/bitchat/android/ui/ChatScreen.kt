@@ -44,6 +44,7 @@ fun ChatScreen(viewModel: ChatViewModel) {
     val showMentionSuggestions by viewModel.showMentionSuggestions.observeAsState(false)
     val mentionSuggestions by viewModel.mentionSuggestions.observeAsState(emptyList())
     val showAppInfo by viewModel.showAppInfo.observeAsState(false)
+    val callState by viewModel.callState.collectAsState()
 
     var messageText by remember { mutableStateOf(TextFieldValue("")) }
     var showPasswordPrompt by remember { mutableStateOf(false) }
@@ -173,6 +174,16 @@ fun ChatScreen(viewModel: ChatViewModel) {
                 viewModel = viewModel,
                 onDismiss = { viewModel.hideSidebar() },
                 modifier = Modifier.fillMaxSize()
+            )
+        }
+
+        // Voice Call UI Overlay
+        if (callState.status != com.bitchat.android.model.CallState.Status.IDLE) {
+            VoiceCallScreen(
+                callState = callState,
+                onAccept = { viewModel.acceptCall() },
+                onDecline = { viewModel.declineCall() },
+                onEnd = { viewModel.endCall() }
             )
         }
     }
