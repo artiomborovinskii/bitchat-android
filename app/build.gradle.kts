@@ -66,38 +66,44 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.appcompat)
-    
+
     // Compose
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.bundles.compose)
-    
+
     // Lifecycle
     implementation(libs.bundles.lifecycle)
-    
+
     // Navigation
     implementation(libs.androidx.navigation.compose)
-    
+
     // Permissions
     implementation(libs.accompanist.permissions)
-    
+
     // Cryptography
     implementation(libs.bundles.cryptography)
-    
+
     // JSON
     implementation(libs.gson)
-    
+
     // Coroutines
     implementation(libs.kotlinx.coroutines.android)
-    
+
     // Bluetooth
     implementation(libs.nordic.ble)
-    
-    // Compression
-    implementation(libs.lz4.java)
-    
+
+    // WebSocket
+    implementation(libs.okhttp)
+
+    // Arti (Tor in Rust) Android bridge - use published AAR with native libs
+    implementation("info.guardianproject:arti-mobile-ex:1.2.3")
+
+    // Google Play Services Location
+    implementation(libs.gms.location)
+
     // Security preferences
     implementation(libs.androidx.security.crypto)
-    
+
     // Testing
     testImplementation(libs.bundles.testing)
     androidTestImplementation(platform(libs.androidx.compose.bom))
