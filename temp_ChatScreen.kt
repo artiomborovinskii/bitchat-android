@@ -15,9 +15,6 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.zIndex
-import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import com.google.accompanist.permissions.isGranted
-import com.google.accompanist.permissions.rememberPermissionState
 
 /**
  * Main ChatScreen - REFACTORED to use component-based architecture
@@ -29,13 +26,9 @@ import com.google.accompanist.permissions.rememberPermissionState
  * - DialogComponents: Password prompts and modals
  * - ChatUIUtils: Utility functions for formatting and colors
  */
-@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun ChatScreen(viewModel: ChatViewModel) {
     val colorScheme = MaterialTheme.colorScheme
-
-    val audioPermissionState = rememberPermissionState(android.Manifest.permission.RECORD_AUDIO)
-
     val messages by viewModel.messages.observeAsState(emptyList())
     val connectedPeers by viewModel.connectedPeers.observeAsState(emptyList())
     val nickname by viewModel.nickname.observeAsState("")
@@ -104,17 +97,8 @@ fun ChatScreen(viewModel: ChatViewModel) {
                     viewModel.updateMentionSuggestions(newText.text)
                 },
                 onSend = {
-                    val text = messageText.text.trim()
-                    if (text.isNotEmpty()) {
-                        if (text.startsWith("/call")) {
-                            if (audioPermissionState.status.isGranted) {
-                                viewModel.sendMessage(text)
-                            } else {
-                                audioPermissionState.launchPermissionRequest()
-                            }
-                        } else {
-                            viewModel.sendMessage(text)
-                        }
+                    if (messageText.text.trim().isNotEmpty()) {
+                        viewModel.sendMessage(messageText.text.trim())
                         messageText = TextFieldValue("")
                     }
                 },
