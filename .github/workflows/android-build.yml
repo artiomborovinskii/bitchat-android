@@ -26,7 +26,7 @@ jobs:
         uses: gradle/gradle-build-action@v2
 
       - name: Build with Gradle
-        run: ./gradlew build
+        run: sudo ./gradlew build
 # Step 6: Upload the APK
       # This is the new, important step!
       - name: Upload APK
